@@ -3,32 +3,74 @@ resource "aws_sfn_state_machine" "sf-process-movies" {
   role_arn = aws_iam_role.sfn_role.arn
 
   definition = jsonencode(
-  {
-    "Comment": "A simple minimal Step Function",
-    "StartAt": "PassState",
-    "States": {
-      "PassState": {
-        "Type": "Pass",
-        "Result": "This is a test state",
-        "End": true
-      }
-    }
-  })
-}
-
-resource "aws_iam_role" "sfn_role" {
-  name = "sfn_execution_role"
-
-  assume_role_policy = jsonencode({
-    Version   = "2012-10-17",
-    Statement = [
-      {
-        Action    = "sts:AssumeRole",
-        Effect    = "Allow",
-        Principal = {
-          Service = "states.amazonaws.com"
+    {
+      "Comment": "Process and transcribe uploaded files",
+      "StartAt": "StartTranscriptionJob",
+      "States": {
+        "StartTranscriptionJob": {
+          "Type": "Task",
+          "Resource": "arn:aws:states:::aws-sdk:transcribe:startTranscriptionJob"
+          "Parameters": {
+            "TranscriptionJobName.$": "States.Format('TranscriptionJob-{}', States.UUID())",
+            "LanguageCode": "en-US",
+            "Media": {
+              "MediaFileUri.$": "States.Format('s3://{}/{}', $.bucket, $.key)"
+            },
+            "OutputBucketName": aws_s3_bucket.movie-summary-transcription-bucket.bucket
+          },
+          "Next": "WaitForTranscription",
+          "ResultPath": "$.transcriptionJob"
+        },
+        "WaitForTranscription": {
+          "Type": "Wait",
+          "Seconds": 60,
+          "Next": "CheckTranscriptionJobStatus"
+        },
+        "CheckTranscriptionJobStatus": {
+          "Type": "Task",
+          "Resource": "arn:aws:states:::aws-sdk:transcribe:getTranscriptionJob",
+          "Parameters": {
+            "TranscriptionJobName.$": "$.transcriptionJob.TranscriptionJob.TranscriptionJobName"
+          },
+          "ResultPath": "$.transcriptionResult"
+          "Next": "IsTranscriptionComplete"
+        },
+        "IsTranscriptionComplete": {
+          "Type": "Choice",
+          "Choices": [
+            {
+              "Variable": "$.transcriptionResult.TranscriptionJob.TranscriptionJobStatus",
+              "StringEquals": "COMPLETED",
+              "Next": "WriteToDynamoDB"
+            },
+            {
+              "Variable": "$.transcriptionResult.TranscriptionJob.TranscriptionJobStatus",
+              "StringEquals": "IN_PROGRESS",
+              "Next": "WaitForTranscription"
+            }
+          ],
+          "Default": "WaitForTranscription"
+        },
+        "WriteToDynamoDB": {
+          "Type": "Task",
+          "Resource": "arn:aws:states:::dynamodb:putItem",
+          "Parameters": {
+            "TableName": aws_dynamodb_table.Video_transcription_DB.name,
+            "Item": {
+              "JobName": {
+                "S.$": "States.UUID()"
+              },
+              "VideoName": {
+                "S.$": "$.key"
+              },
+              "Transcription": {
+                "S.$": "$.transcriptionResult.TranscriptionJob.Transcript.TranscriptFileUri"
+              }
+            }
+          },
+          "End": true
         }
       }
-    ]
-  })
+    }
+  )
 }
