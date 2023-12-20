@@ -47,7 +47,7 @@ resource "aws_lambda_layer_version" "lambda_dependencies_layer" {
 resource "aws_lambda_function" "summarize-movie" {
   function_name = "generate-summary"
   role          = aws_iam_role.lambda_role.arn
-  handler       = "lambda.create-summary.lambda_handler"
+  handler       = "create-summary.lambda_handler"
   filename      = data.archive_file.lambda_src.output_path
   runtime       = "python3.9"
   timeout       = 30
@@ -68,7 +68,7 @@ resource "aws_lambda_function" "summarize-movie" {
 resource "aws_lambda_function" "list-movies" {
   function_name = "list-movies"
   role          = aws_iam_role.lambda_role.arn
-  handler       = "lambda.list-movies.lambda_handler"
+  handler       = "list-movies.lambda_handler"
   filename      = data.archive_file.lambda_src.output_path
   runtime       = "python3.9"
   timeout       = 30
