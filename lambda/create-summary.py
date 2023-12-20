@@ -11,16 +11,17 @@ bedrock_client = boto3.client('bedrock-runtime')
 
 def lambda_handler(event, context):
 
-    # print(bedrock.list_foundation_models())
+    print(bedrock.list_foundation_models())
+    print(event)
 
     #
 
-    # bedrock_runtime = bedrock.get_bedrock_client()
+    bedrock_runtime = bedrock.get_bedrock_client()
 
     prompt = '''
-    
+
     Human:test
-        
+
     Assistant:
     '''
 

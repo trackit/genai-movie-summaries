@@ -1,6 +1,7 @@
 resource "null_resource" "install_dependencies" {
   provisioner "local-exec" {
-    command     = "pip3 install $(grep -ivE 'pandas' ../lambda/requirements.txt) -t ../python/python"
+    interpreter = var.Terminal == "windows/git/bash" ? ["C:/Program Files/Git/bin/bash.exe", "-c"] : null
+    command     = "pip3 install $(grep -ivE 'pandas' ../lambda/requirements.txt) -t ../python"
   }
   triggers = {
     run_on_requirements_change = filemd5("../lambda/requirements.txt")
@@ -46,7 +47,7 @@ resource "aws_lambda_layer_version" "lambda_dependencies_layer" {
 resource "aws_lambda_function" "summarize-movie" {
   function_name = "generate-summary"
   role          = aws_iam_role.lambda_role.arn
-  handler       = "create-summary.lambda_handler"
+  handler       = "lambda.create-summary.lambda_handler"
   filename      = data.archive_file.lambda_src.output_path
   runtime       = "python3.9"
   timeout       = 30
@@ -67,7 +68,7 @@ resource "aws_lambda_function" "summarize-movie" {
 resource "aws_lambda_function" "list-movies" {
   function_name = "list-movies"
   role          = aws_iam_role.lambda_role.arn
-  handler       = "list-movies.lambda_handler"
+  handler       = "lambda.list-movies.lambda_handler"
   filename      = data.archive_file.lambda_src.output_path
   runtime       = "python3.9"
   timeout       = 30
