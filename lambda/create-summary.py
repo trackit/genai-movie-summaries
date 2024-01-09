@@ -13,15 +13,20 @@ def lambda_handler(event, context):
     event_body = json.loads(event['body'])
     table_name = os.environ['DYNAMODB_TABLE_NAME']
 
-    if 'custom' in event_body:
-        custom = event_body['custom']
+    if 'language' in event_body:
+        language = event_body['language']
     else:
-        custom = ''
+        language = 'english'
 
     if 'type' in event_body:
         type = event_body['type']
     else:
         type = 'Synopsis'
+
+    if 'custom' in event_body:
+        custom = event_body['custom']
+    else:
+        custom = ''
 
     try:
         table = dynamodb.Table(table_name)
@@ -69,7 +74,7 @@ Human: You are a summary writer, your role is to create a summaries from the mov
     Length: Short (a few lines to a paragraph).
     Characteristics: Must be concise and appealing to encourage instant viewing. Often focuses on the most intriguing or unique elements of the film.
  - {custom}
-    Write a summary for the transcript I will give you following the type: {type},
+    Write a summary for the transcript I will give you following the type: {type}, in {language}
     Transcript : {transcription}
 
 Assistant:
