@@ -127,7 +127,8 @@ resource "aws_iam_role_policy" "lambda_policy" {
           "s3:GetObject",
           "logs:CreateLogGroup",
           "logs:CreateLogStream",
-          "logs:PutLogEvents"
+          "logs:PutLogEvents",
+          "bedrock:InvokeModel"
         ],
         Effect = "Allow",
         Resource = "*",
