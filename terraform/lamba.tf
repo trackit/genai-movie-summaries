@@ -1,6 +1,7 @@
 resource "null_resource" "install_dependencies" {
   provisioner "local-exec" {
-    command     = "pip3 install $(grep -ivE 'pandas' ../lambda/requirements.txt) -t ../python/python"
+    interpreter = var.Terminal == "windows/git/bash" ? ["C:/Program Files/Git/bin/bash.exe", "-c"] : null
+    command     = "pip3 install $(grep -ivE 'pandas' ../lambda/requirements.txt) -t ../python"
   }
   triggers = {
     run_on_requirements_change = filemd5("../lambda/requirements.txt")
@@ -32,6 +33,7 @@ data "archive_file" "lambda_src" {
   type        = "zip"
 }
 
+# not been used
 resource "aws_lambda_layer_version" "lambda_dependencies_layer" {
   depends_on       = [data.archive_file.lambda_dependencies]
   filename         = "../python.zip"
@@ -41,7 +43,7 @@ resource "aws_lambda_layer_version" "lambda_dependencies_layer" {
   compatible_runtimes = ["python3.9"]
 }
 
-
+#
 
 resource "aws_lambda_function" "summarize-movie" {
   function_name = "generate-summary"
@@ -49,10 +51,10 @@ resource "aws_lambda_function" "summarize-movie" {
   handler       = "create-summary.lambda_handler"
   filename      = data.archive_file.lambda_src.output_path
   runtime       = "python3.9"
-  timeout       = 30
+  timeout       = 120
 
   layers = [
-    aws_lambda_layer_version.lambda_dependencies_layer.arn
+    "arn:aws:lambda:us-west-2:770693421928:layer:Klayers-p311-boto3:5"
   ]
 
   source_code_hash = filebase64sha256(data.archive_file.lambda_src.output_path)
@@ -73,7 +75,7 @@ resource "aws_lambda_function" "list-movies" {
   timeout       = 30
 
   layers = [
-    aws_lambda_layer_version.lambda_dependencies_layer.arn
+    "arn:aws:lambda:us-west-2:770693421928:layer:Klayers-p311-boto3:5"
   ]
 
   source_code_hash = filebase64sha256(data.archive_file.lambda_src.output_path)

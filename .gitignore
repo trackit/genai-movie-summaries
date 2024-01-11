@@ -39,11 +39,13 @@ terraform.rc
 __pycache__/
 *.py[cod]
 *$py.class
+*.zip
 
 # C extensions
 *.so
 
 # Distribution / packaging
+/python
 .Python
 build/
 develop-eggs/
