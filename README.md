@@ -10,10 +10,9 @@ The pipeline is designed to process video files uploaded to S3, using AWS servic
 
 - **AWS S3 Integration**: Upload and store movie files.
 - **Event-Driven Architecture**: Trigger processes with AWS EventBridge and Step Functions.
-- **Video Processing**: (Full version) Use AWS Elemental MediaConvert and Amazon Rekognition.
 - **Data Storage**: Store and retrieve data with Amazon DynamoDB.
 - **API Access**: Interact with the pipeline through AWS API Gateway and Lambda functions.
-- **LLM Summarization**: Leverage Bedrock and Anthropic's Claude Instant for generating summaries.
+- **LLM Summarization**: Leverage Bedrock and Anthropic's Claude v2 for generating summaries.
 
 ## Getting Started
 
@@ -47,5 +46,5 @@ The pipeline is designed to process video files uploaded to S3, using AWS servic
 
 ## Acknowledgments
 
-- Anthropic for the Claude Instant model.
+- Anthropic for the Claude v2 model.
 - AWS services used in this project.

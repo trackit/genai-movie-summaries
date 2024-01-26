@@ -92,15 +92,11 @@ Assistant:
             contentType="application/json"
         )
 
-        response_body = json.loads(response["body"].read())
-
-        print(response_body)
-
         return {
             'statusCode': 200,
             'body': json.dumps({
                 'JobName': job_name,
-                'bedrock_response': response_body["completion"],
+                'bedrock_response': json.loads(response["body"].read())["completion"],
             })
         }
 
